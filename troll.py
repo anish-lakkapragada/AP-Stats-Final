@@ -9,10 +9,10 @@ from matplotlib import pyplot as plt
 poly = PolynomialFeatures(degree=2, include_bias=True)
 
 NOISE_LEVEL = 0.3
-SCALE = 20
-POPULATION_N = 5000 
-BINS=100
-SAMPLE_N = 50
+SCALE = 1
+POPULATION_N = 50000 
+BINS= 100
+SAMPLE_N = 500
 TRIALS = 1000
 BETAS_SQUARED = []
 BETAS_X = []
@@ -42,7 +42,7 @@ plt.title("hisotgram")
 plt.show()
 
 ## plot all of the data 
-BETAS_SQUARED = np.array(BETAS_SQUARED, dtype=np.float64)
+BETAS_SQUARED = np.array(BETAS_SQUARED, dtype=np.float128)
 hist, bins_edges = np.histogram(BETAS_SQUARED, bins=BINS)
 
 def calculate_bins(edges): 
@@ -52,10 +52,11 @@ def calculate_bins(edges):
     bins_x_values = [] 
     for i in range(len(edges) - 1): 
         bins_x_values.append((edges[i] + edges[i + 1]) / 2)
-    bins_x_values = np.array(bins_x_values, dtype=np.float64)
+    bins_x_values = np.array(bins_x_values, dtype=np.float128)
     assert bins_x_values.size == edges.size - 1
     return bins_x_values
 
+print(calculate_bins(bins_edges))
 plt.plot(calculate_bins(bins_edges), hist)
 
 # run curve fitting
@@ -65,7 +66,7 @@ def gauss(x, H, A, x0, sigma):
     return H + A * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
 
 x_values = calculate_bins(bins_edges) # the sample beta values
-popt, pcov = curve_fit(gauss, x_values, hist.astype(np.float64), p0= [np.array(0, dtype=np.float64), np.array(1, dtype=np.float64), np.mean(BETAS_SQUARED), np.std(BETAS_SQUARED)])
+popt, pcov = curve_fit(gauss, x_values, hist.astype(np.float128))
 
 # plot gaussian function
 gauss_x_values = np.linspace(np.min(x_values), np.max(x_values), num=10)
