@@ -21,6 +21,7 @@ BETAS_0 = []
 X_total = SCALE * np.random.rand(POPULATION_N,)
 y_total = X_total ** 2 
 y_total += NOISE_LEVEL * np.mean(y_total) * np.random.rand(POPULATION_N,)
+#bruh
 # %%
 def calculate_betas(): 
     N = np.random.permutation(SAMPLE_N)
