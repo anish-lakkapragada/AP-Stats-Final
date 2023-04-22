@@ -6,8 +6,9 @@ from sklearn.linear_model import LinearRegression
 from tqdm import trange
 from matplotlib import pyplot as plt
 
-poly = PolynomialFeatures(degree=2, include_bias=True)
 
+
+DEGREE=2
 NOISE_LEVEL = 0.3
 SCALE = 1
 POPULATION_N = 50000 
@@ -17,6 +18,8 @@ TRIALS = 1000
 BETAS_SQUARED = []
 BETAS_X = []
 BETAS_0 = [] 
+
+poly = PolynomialFeatures(degree=DEGREE, include_bias=True)
 
 X_total = SCALE * np.random.rand(POPULATION_N,)
 y_total = X_total ** 2 
@@ -39,7 +42,7 @@ for i in trange(TRIALS):
 fig, ax = plt.subplots(figsize=(10, 7))
 # ax.hist(BETAS_SQUARED, label="$X^{2}")
 ax.hist(BETAS_SQUARED, label="X", bins=BINS)
-plt.title("hisotgram")
+plt.title(r"Histogram of $\beta^{2}$")
 plt.show()
 
 ## plot all of the data 
