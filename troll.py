@@ -4,31 +4,32 @@ import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from tqdm import trange
+from sklearn.utils import shuffle
 from matplotlib import pyplot as plt
 
 
 
 DEGREE=2
-NOISE_LEVEL = 0.3
-SCALE = 1
-POPULATION_N = 50000 
+NOISE_LEVEL = 3
+SCALE = 10
+POPULATION_N = 5000
 BINS= 100
-SAMPLE_N = 500
+SAMPLE_N = 50
 TRIALS = 1000
-BETAS_SQUARED = []
+PARAMS = []
 BETAS_X = []
 BETAS_0 = [] 
 
-poly = PolynomialFeatures(degree=DEGREE, include_bias=True)
-
 X_total = SCALE * np.random.rand(POPULATION_N,)
-y_total = X_total ** 2 
+y_total = X_total ** DEGREE
 y_total += NOISE_LEVEL * np.mean(y_total) * np.random.rand(POPULATION_N,)
+plt.scatter(X_total, y_total)
 #bruh
 # %%
 def calculate_betas(): 
-    N = np.random.permutation(SAMPLE_N)
-    X_sample, y_sample = X_total[N], y_total[N]
+    _X, _y = shuffle(X_total, y_total)
+    X_sample, y_sample = _X[:SAMPLE_N], _y[:SAMPLE_N]
+    poly = PolynomialFeatures(degree=DEGREE, include_bias=False)
     poly_features = poly.fit_transform(X_sample.reshape(-1, 1))
     poly_reg_model = LinearRegression()
     poly_reg_model.fit(poly_features, y_sample)
@@ -36,18 +37,18 @@ def calculate_betas():
 
 for i in trange(TRIALS): 
     betas = calculate_betas()
-    BETAS_SQUARED.append(betas[-1]) # higher degree for the further index
+    PARAMS.append(betas[-1]) # higher degree for the further index
     
 # %%
 fig, ax = plt.subplots(figsize=(10, 7))
-# ax.hist(BETAS_SQUARED, label="$X^{2}")
-ax.hist(BETAS_SQUARED, label="X", bins=BINS)
+# ax.hist(PARAMS, label="$X^{2}")
+ax.hist(PARAMS, label="X", bins=BINS)
 plt.title(r"Histogram of $\beta^{2}$")
 plt.show()
 
 ## plot all of the data 
-BETAS_SQUARED = np.array(BETAS_SQUARED, dtype=np.float128)
-hist, bins_edges = np.histogram(BETAS_SQUARED, bins=BINS)
+PARAMS = np.array(PARAMS, dtype=np.float128)
+hist, bins_edges = np.histogram(PARAMS, bins=BINS)
 
 def calculate_bins(edges): 
     """
