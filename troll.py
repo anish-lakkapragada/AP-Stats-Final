@@ -10,18 +10,18 @@ from matplotlib import pyplot as plt
 
 
 DEGREE=2
-NOISE_LEVEL = 3
+NOISE_LEVEL = 5
 SCALE = 10
 POPULATION_N = 5000
 BINS= 100
 SAMPLE_N = 50
-TRIALS = 1000
+TRIALS = 10000
 PARAMS = []
 BETAS_X = []
 BETAS_0 = [] 
 
 X_total = SCALE * np.random.rand(POPULATION_N,)
-y_total = X_total ** DEGREE
+y_total = np.log(X_total ** DEGREE + X_total ** (DEGREE - 1))
 y_total += NOISE_LEVEL * np.mean(y_total) * np.random.rand(POPULATION_N,)
 plt.scatter(X_total, y_total)
 #bruh
@@ -82,7 +82,10 @@ plt.plot(x_values, hist, label="Raw-Frequencies")
 plt.legend()
 plt.show()
 # %%
-"""
-- plan what to do during summer break
-- have to do all of the progress checks!!
+
+"""bruh
+- even works for np.log(X^n) functions in terms of modeling and creating a normal distribution
+- any functinoal fit() model of the X^{n} will follow (makes sense)
+
+-> does gradient descent follow any such thing
 """
