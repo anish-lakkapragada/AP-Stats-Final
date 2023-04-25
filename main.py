@@ -75,7 +75,7 @@ def regression_plot():
     hist, bins_edges = np.histogram(PARAMS, bins=BINS)
 
     x_values = calculate_bins(bins_edges) # the sample beta values
-    popt, pcov = curve_fit(gauss, x_values, hist.astype(np.float128))
+    popt, _ = curve_fit(gauss, x_values, hist.astype(np.float128))
 
     # plot gaussian function
     gauss_x_values = np.linspace(np.min(x_values), np.max(x_values), num=10)
