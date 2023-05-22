@@ -3,10 +3,51 @@ import numpy as np
 import scipy 
 from scipy.stats import multivariate_normal, norm 
 from sklearn.cluster import KMeans 
+import imageio
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from moviepy.video.io.bindings import mplfig_to_npimage
+from matplotlib.figure import Figure
+import matplotlib
+import datetime 
+    
+def plot_gmm_output(gmm, show_second=True): 
+    
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111)
+    canvas = fig.canvas
 
+    ax.hist(X, color="blue")
+    xmin, xmax = -20, 30
+    x = np.linspace(xmin, xmax, 10000) 
+    pdf_curve = np.zeros(x.shape[0])
+    for mean, sigma, mixture_weight in zip(gmm.means, gmm.sigmas, gmm.mixture_weights): 
+        pdf_curve += norm.pdf(x, mean, sigma) * mixture_weight
+    
+
+    ax.plot(x, pdf_curve * np.sum(N_s), color="red")
+    ax.set_title("Final GMM Model")
+    ax.set_xlabel("Values")
+    ax.set_ylabel("Frequency")
+    
+    if canvas and fig: 
+        print("drawing")
+        plt.show()
+        # image_flat = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')  # (H * W * 3,)
+        # image = image_flat.reshape(*fig.canvas.get_width_height(), 3)  # (H, W, 3)
+        # return image
+        numpy_fig = mplfig_to_npimage(fig)  # 
+        fig.clear()
+        return numpy_fig
+    
+    if show_second: 
+        ax.plot(x, pdf_curve)
+        ax.set_title("Probability Distribution of Gaussian Mixture Model")
+        ax.set_ylabel("Relative Frequency")
+        ax.set_xlabel("Values")
+        
 class GMM(): 
     """only a univariate case for the GMM models"""
-    def __init__(self, num_clusters, iters, tries=10, tolerance=1e-16, kmeans_init=False): 
+    def __init__(self, num_clusters, iters, tries=10, tolerance=1e-16, kmeans_init=False, image_creation=False): 
         self.k = num_clusters
         self.means = np.random.randn(self.k)
         self.sigmas = np.abs(np.random.randn(self.k))
@@ -16,7 +57,8 @@ class GMM():
         self.tries = tries 
         self.tolerance = tolerance
         self.kmeans_init = kmeans_init
-    
+        self.image_creation = image_creation
+        
     def _expectation(self, X): 
         # compute probabilities P(x_i belongs to cluster K)
         # matrix shape is going to be (N, k) 
@@ -31,7 +73,6 @@ class GMM():
         
         # divide column wise by the probabilities of all of them  
         self.cluster_probabilities = self.cluster_probabilities/np.expand_dims(np.sum(self.cluster_probabilities, axis = 1), 1)
-        print(self.cluster_probabilities)
         
     def _maximization(self, X): 
         """step in order to maximize the likelihood"""
@@ -70,6 +111,7 @@ class GMM():
         self.lls = []
         for trie in range(self.tries): 
             ignore_trie = False 
+            IMAGES = []
             for i in range(self.iters): 
                 if i == 0: 
                     self.cluster_probabilities = np.zeros((N, self.k)) 
@@ -82,7 +124,6 @@ class GMM():
 
                 if np.abs(new_ll - cur_ll) < self.tolerance and i != 0: 
                     # converged 
-                    print(new_ll - cur_ll)
                     print(f"Converged after {i + 1} iterations.")
                     break 
                 
@@ -90,9 +131,14 @@ class GMM():
                 
                 cur_ll = new_ll 
                 
-                if cur_ll == np.nan: 
+                if np.isnan(cur_ll): 
                     ignore_trie = True
+                    print("ignoring!")
                     break
+            
+                # plot output
+                image = plot_gmm_output(self, show_second=False)
+                IMAGES.append(image)
                 
             if ignore_trie: continue 
             self.params.append([self.means, self.sigmas, self.mixture_weights])
@@ -101,11 +147,15 @@ class GMM():
             self.means = np.random.randn(self.k)
             self.sigmas = np.abs(np.random.randn(self.k))
             self.mixture_weights = np.ones(self.k) / self.k
-        
+            
+            # image creation 
+            if self.image_creation: 
+                imageio.mimsave(f"videos/trie-{str(datetime.date.today())}-{trie}.mov", IMAGES, fps=1)
+                print("Successfully saved video!")
+                
         params = self.params[np.argmax(self.lls)]
         self.means, self.sigmas, self.mixture_weights = params 
             
-
 import numpy as np 
 from typing import List, Tuple 
 import matplotlib.pyplot as plt 
@@ -118,32 +168,18 @@ def generate_normal_mixture(means : List[float], sigmas : List[float], N_s : Lis
         X = np.concatenate((X, np.random.normal(mean, sigma, N)))
     return X 
 
-N_s = [2000, 2000]
-X = generate_normal_mixture([-3, 15], [1, 3], N_s)
-# plt.hist(X)
+N_s = [50000]
+X = generate_normal_mixture([-30], [1], N_s)
+plt.hist(X)
 
 """train using a GMM"""
-gmm = GMM(num_clusters=2, iters=100, kmeans_init=True)
+gmm = GMM(num_clusters=len(N_s), iters=100, kmeans_init=True, image_creation=True)
 gmm.fit_data(X)
 
 print(f"means: {gmm.means} and sigmas: {gmm.sigmas}")
 print(f"mixture weights: {gmm.mixture_weights}")
 
-def plot_gmm_output(gmm:GMM): 
-    plt.hist(X)
-    
-    xmin, xmax = -20, 25
-    x = np.linspace(xmin, xmax, 10000)
-    pdf_curve = np.zeros(x.shape[0])
-    for mean, sigma, mixture_weight in zip(gmm.means, gmm.sigmas, gmm.mixture_weights): 
-        pdf_curve += norm.pdf(x, mean, sigma) * mixture_weight
-    
-    plt.plot(x, pdf_curve * np.sum(N_s))
-    plt.title("Final Decision")
-    plt.show()
-    
-    plt.plot(x, pdf_curve * np.sum(N_s))
-
+fig = Figure()
 plot_gmm_output(gmm)
 # %%
 
