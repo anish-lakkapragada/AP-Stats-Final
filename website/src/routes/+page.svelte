@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import CustomizeCluster from "../lib/CustomizeCluster.svelte";
-    import {expectation, maximization, giveData, ll, getGMMPDF} from "../utils";
+    import {expectation, maximization, giveData, ll, getGMMPDF, integral} from "../utils";
     import kmeans from "../kmeans";
 
     // Aak07Dz5rcZ494apI6oq
@@ -116,14 +116,17 @@
 
             oneTry();
             
-            // if they have stopped, draw the PDF 
+            
             if (stop) {
-                const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.1, Math.min(...data), Math.max(...data), N * numClusters); 
-                console.log("bruh");
+                // once the model has (hopefully) converged, run this code over here. 
+                console.log("integral of GMM PDF", integral(-200, 200, gmmMeans, gmmStds, gmmMixtureWeights, 0.0001, N)); 
+                const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.1, Math.min(...data), Math.max(...data), data.length); 
+                console.log(Math.max(...data));
+                
                 Plotly.newPlot("histogram", [
                     {
                         type: "histogram", 
-                        x: data,
+                        x: giveData(gmmMeans, gmmStds, data.length)
                     }, 
                     {
                         x: x, 

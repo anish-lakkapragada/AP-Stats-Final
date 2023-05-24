@@ -29,6 +29,33 @@ export function giveData(means: number[], stds: number[], N : number) {
   return newData;
 }
 
+// export function giveData(means: number[], stds: number[], N: number) {
+//   // N is the total number of data points? 
+//   const newData = []; // getFreqAtOneLocation
+//   const meanBigIndex = argMax(means);
+//   const meanSmallIndex = argMin(means); 
+//   const lowerBound = means[meanSmallIndex] - 3 * stds[meanSmallIndex]; 
+//   const upperBound = means[meanBigIndex] + 3 * stds[meanBigIndex];
+
+//   // draw N points from this space 
+//   let curClusterIndex = 0; 
+//   for (let i =0; i < N; i++) {
+//     if (curClusterIndex == means.length) {curClusterIndex = 0;}
+//     const {z0} = boxMullerTransform(); 
+//     let sum =0; 
+//     for (let k =0; k < means.length; k++) {
+//       if (k == curClusterIndex) {
+//         // if from this cluster, use the z0 (no need to convert) and calculate 
+//         sum += z0 * stds[k] + means[k];
+//         continue;
+//       }
+//       // if not from this cluster, 
+//     }
+
+//     curClusterIndex++; 
+//   }
+// }
+
 
 function divideByRowSum(matrix: number[][]) {
   const sums = []; 
@@ -180,4 +207,13 @@ export function getGMMPDF(means: number[], stds: number[], mixture_weights: numb
   }
 
   return {x: exes, y: lineFreq}; 
+}
+
+export function integral(start: number, end: number, means: number[], stds: number[], mixture_weights: number[], dx: number = 0.1, N_tot: number = 1): number {
+  let sum : number = 0; 
+  while (start < end) {
+    sum += dx * N_tot * getFreqAtOneLocation(start, means, stds, mixture_weights);
+    start += dx; 
+  }
+  return sum; 
 }
