@@ -119,14 +119,15 @@
             
             if (stop) {
                 // once the model has (hopefully) converged, run this code over here. 
-                console.log("integral of GMM PDF", integral(-200, 200, gmmMeans, gmmStds, gmmMixtureWeights, 0.0001, N)); 
+                const average = array => array.reduce((a, b) => a + b) / array.length;
+                console.log("integral of GMM PDF", integral(-200, 200, gmmMeans, gmmStds, gmmMixtureWeights, 0.0001, 1)); 
                 const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.1, Math.min(...data), Math.max(...data), data.length); 
                 console.log(Math.max(...data));
                 
                 Plotly.newPlot("histogram", [
                     {
                         type: "histogram", 
-                        x: giveData(gmmMeans, gmmStds, data.length)
+                        x: giveData(means, stds, data.length)
                     }, 
                     {
                         x: x, 
