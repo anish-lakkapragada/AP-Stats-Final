@@ -1,7 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import CustomizeCluster from "../lib/CustomizeCluster.svelte";
-    import {expectation, maximization, giveData, ll, getGMMPDF, integral} from "../utils";
+    import Modal from "../lib/Modal.svelte";
+    import CDF from "../lib/CDF.svelte";
+    import {expectation, maximization, giveData, ll, getBounds, getGMMPDF, integral} from "../utils";
     import kmeans from "../kmeans";
 
     // Aak07Dz5rcZ494apI6oq
@@ -12,8 +14,17 @@
     let means : number[] = []; 
     let stds : number[]= [];
     let data : number[] = []; 
-    let showHistogram = false; 
-    let started = false; 
+    let showHistogram: boolean = false; 
+    let started: boolean = false; 
+    let stop: boolean = false; 
+    let cdfModalOpen: boolean = false; 
+
+    // GMM params 
+    let gmmMeans: number[] = []; 
+    let gmmStds: number[] = []; 
+    let gmmMixtureWeights: number[] = []; 
+
+    // GMM training params
     const iters = 1000; // 100 max iterations
     const N= 10000; // number of data points
     const tries = 10; 
@@ -64,10 +75,10 @@
 
     $: {
         if (started) {
-            let gmmMeans : number[] = []; 
-            let gmmStds: number[] = []; 
-            let gmmMixtureWeights : number[] = Array(numClusters).fill(1/numClusters);
-            let stop: boolean = false; 
+            gmmMeans = []; 
+            gmmStds= []; 
+            gmmMixtureWeights= Array(numClusters).fill(1/numClusters);
+            stop = false; 
             let oldLL : number = -100; 
 
             const {centroids} = kmeans(data.map(e => [e]), numClusters); 
@@ -122,7 +133,6 @@
                 const average = array => array.reduce((a, b) => a + b) / array.length;
                 console.log("integral of GMM PDF", integral(-200, 200, gmmMeans, gmmStds, gmmMixtureWeights, 0.0001, 1)); 
                 const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.1, Math.min(...data), Math.max(...data), data.length); 
-                console.log(Math.max(...data));
                 
                 Plotly.newPlot("histogram", [
                     {
@@ -141,6 +151,67 @@
         }
     }
 
+    function displayCDF(e: any) {
+        const {start, end} = e.detail; 
+        // from x E {start, end} show a shaded area
+        const {start: trueStart, end: trueEnd} = getBounds(gmmMeans, gmmStds);
+        const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.001, trueStart, trueEnd, data.length);
+        const lowerX: number[] = [];
+        const lowerY: number[] = []; 
+        const includedX: number[] = []; 
+        const includedY: number[] = []; 
+        const upperX: number[] = []; 
+        const upperY: number[] = []; 
+
+
+        for (let i =0; i < x.length; i++) {
+            console.log(x[i]);
+            if (x[i] >= start && x[i] <= end) {
+                includedX.push(x[i]);
+                includedY.push(y[i]);
+                continue;
+            }
+            else if (x[i] <= start) {
+                lowerX.push(x[i]);
+                lowerY.push(y[i]);
+            }
+            else {
+                upperX.push(x[i]);
+                upperY.push(y[i]);
+            }
+        }
+
+        Plotly.newPlot("histogram", [
+            // {
+            //     type: "histogram", 
+            //     x: giveData(means, stds, data.length)
+            // }, 
+            {
+                x: includedX, 
+                y: includedY, 
+                type: "scatter",
+                fill: "tozeroy", 
+            }, 
+            {
+                x: lowerX, 
+                y: lowerY, 
+                type: "scatter",
+                line: {
+                    color: "orange"
+                }
+            }, 
+            {
+                x: upperX, 
+                y: upperY, 
+                type: "scatter", 
+                line: {
+                    color: "orange"
+                }
+            }
+        ]);
+
+    }
+
 
 </script> 
 
@@ -149,8 +220,9 @@
 </svelte:head>
 
 <html lang="en" data-theme="cupcake">
+<input type="checkbox" id="my-modal" class="modal-toggle" />
 
-<div class="text-center"> 
+<body class="text-center"> 
     <h1 class="text-4xl my-4"> Gaussian Mixture Model Demo </h1>  
     <p class="mb-4"> Anish Lakkapragada's AP Stats Final Project. </p>
 
@@ -179,11 +251,21 @@
         </div>
     </div>
 
-    <button on:click={() => {started = true; }} class="btn btn-block bg-blue-200 w-[60%] mt-4 text-black hover:text-white">Run Gaussian Mixture Model (<em> k </em> = {numClusters})! </button>
+    <button on:click={() => {started = true; }} class="btn btn-block mb-4 bg-blue-200 w-[60%] mt-4 text-black hover:text-white">Run Gaussian Mixture Model (<em> k </em> = {numClusters})! </button>
     <!-- on click run the GMMs, which constantly update this function's parameters-->
+    
+    <!-- if they have stopped, then you should show the CDF operation -->
+    <!-- {#if stop} -->
+    <div> 
+       <button on:click={() => {cdfModalOpen = true; }} class="btn btn-block mb-4 bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> CDF??</button>
+        <Modal showModal={cdfModalOpen}>
+            <CDF on:update={displayCDF} means={gmmMeans} stds={gmmStds} mw={gmmMixtureWeights} /> 
+        </Modal>
+    </div> 
+    <!-- {/if} -->
 
     <div id="histogram"/> 
-</div>
+</body>
 </html>
 
 <style> 

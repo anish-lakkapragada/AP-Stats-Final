@@ -16,12 +16,12 @@ function getNormallyDistributedRandomNumber(mean : number, stddev : number) {
   return z0 * stddev + mean;
 }
 
-export function giveData(means: number[], stds: number[], N : number) {
+export function giveData(means: number[], stds: number[], N : number, scale: number=1) {
   const newData = []; 
   // get the same amount of data from each one 
   for (let i = 0; i < means.length; i++) {
     for (let n = 0; n < N; n++) {
-      const dataPoint = getNormallyDistributedRandomNumber(means[i], stds[i]);
+      const dataPoint = scale * getNormallyDistributedRandomNumber(means[i], stds[i]);
       newData.push(dataPoint);
     }
   }
@@ -195,6 +195,15 @@ function getFreqAtOneLocation(x: number, means: number[], stds: number[], mixtur
 const argFact = (compareFn: { (min: any, el: any): any; (max: any, el: any): any; }) => (array: any[]) => array.map((el: any, idx: any) => [el, idx]).reduce(compareFn)[1]
 const argMax = argFact((min: number[], el: number[]) => (el[0] > min[0] ? el : min))
 const argMin = argFact((max: number[], el: number[]) => (el[0] < max[0] ? el : max))
+
+export function getBounds(means: number[], stds: number[]) {
+  const maxMeanIndex: number = argMax(means); 
+  const minMeanIndex: number = argMin(means);
+
+  return {start: means[minMeanIndex] - 3 * stds[maxMeanIndex], 
+          end: means[maxMeanIndex] + 3 * stds[maxMeanIndex]}
+
+}
 
 export function getGMMPDF(means: number[], stds: number[], mixture_weights: number[], dx: number, start: number, end: number, N_tot: number) {
   const lineFreq : number[] = []; 
