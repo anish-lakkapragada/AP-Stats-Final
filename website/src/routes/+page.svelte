@@ -82,9 +82,8 @@
             
             function oneStep() {
                 const clusterProbabilities = expectation(gmmMeans, gmmStds, gmmMixtureWeights, data, numClusters); // get the cluster probabilities 
-                console.log(clusterProbabilities);
+
                 const newParams = maximization(gmmMeans, gmmStds, gmmMixtureWeights, data, numClusters, clusterProbabilities);
-                console.log(newParams);
                 gmmMeans = newParams.means; gmmStds = newParams.stds; gmmMixtureWeights = newParams.mixture_weights; // update all params 
                 
                 // Naan check
