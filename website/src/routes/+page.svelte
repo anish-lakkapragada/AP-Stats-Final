@@ -100,6 +100,7 @@
             console.log(gmmStds);
         }
     }
+    // bruh
 
     function displayCDF(e: any) {
         const {start, end} = e.detail; 
