@@ -3,9 +3,8 @@
     import CustomizeCluster from "../lib/CustomizeCluster.svelte";
     import Modal from "../lib/Modal.svelte";
     import CDF from "../lib/CDF.svelte";
-    import {expectation, maximization, giveData, ll, getBounds, getGMMPDF, integral} from "../utils";
-    import kmeans from "../kmeans";
-
+    import {giveData, getBounds, getGMMPDF, integral} from "../utils";
+    import { multipleGMMRuns } from "../gmm";
     // Aak07Dz5rcZ494apI6oq
     // anish-lakkapragada
     import '../app.css';
@@ -75,79 +74,30 @@
 
     $: {
         if (started) {
-            gmmMeans = []; 
-            gmmStds= []; 
-            gmmMixtureWeights= Array(numClusters).fill(1/numClusters);
+           
             stop = false; 
-            let oldLL : number = -100; 
-
-            const {centroids} = kmeans(data.map(e => [e]), numClusters); 
-            gmmMeans = centroids; 
-            console.log("initial means"); 
-            console.log(gmmMeans); 
-
-            for (const _ of gmmMixtureWeights) {
-                gmmStds.push(Math.random()); // random initialization 
-            }
-
             
-            function oneStep() {
-                const clusterProbabilities = expectation(gmmMeans, gmmStds, gmmMixtureWeights, data, numClusters); // get the cluster probabilities 
-                console.log(clusterProbabilities);
-                const newParams = maximization(gmmMeans, gmmStds, gmmMixtureWeights, data, numClusters, clusterProbabilities);
-                console.log(newParams);
-                gmmMeans = newParams.means; gmmStds = newParams.stds; gmmMixtureWeights = newParams.mixture_weights; // update all params 
-                
-                // Naan check
-                for (let j = 0; j < numClusters; j++){
-                    if (Number.isNaN(gmmMeans[j]) || Number.isNaN(gmmStds[j])) {
-                        stop = true; 
-                    }
-                }
-
-                const newLL = ll(clusterProbabilities);
-                if (newLL - oldLL < 1e-6) {
-                    stop = true; 
-                    console.log("Model Converged.")
-                }
-
-                oldLL = newLL; 
-
-            }
-
-            function oneTry() {
-                for (let i =0; i < iters; i++){
-                    oneStep();
-                    if (stop) {
-                        console.log("stopping");
-                        break;
-                    }
-                }
-            }
-
-            oneTry();
+            // regression time
+            const bestParams = multipleGMMRuns(tries, iters, data, numClusters, 1e-16);
+            gmmMeans = bestParams.gmmMeans; gmmStds = bestParams.gmmStds; gmmMixtureWeights = bestParams.gmmMixtureWeights;
             
+            stop = true; 
+            console.log("integral of GMM PDF", integral(-200, 200, gmmMeans, gmmStds, gmmMixtureWeights, 0.0001, 1)); 
+            const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.1, Math.min(...data), Math.max(...data), data.length); 
             
-            if (stop) {
-                // once the model has (hopefully) converged, run this code over here. 
-                const average = array => array.reduce((a, b) => a + b) / array.length;
-                console.log("integral of GMM PDF", integral(-200, 200, gmmMeans, gmmStds, gmmMixtureWeights, 0.0001, 1)); 
-                const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.1, Math.min(...data), Math.max(...data), data.length); 
-                
-                Plotly.newPlot("histogram", [
-                    {
-                        type: "histogram", 
-                        x: giveData(means, stds, data.length)
-                    }, 
-                    {
-                        x: x, 
-                        y: y, 
-                        type: "scatter"
-                    }
-                ]); 
-                console.log(gmmMeans);
-                console.log(gmmStds);
-            }
+            Plotly.newPlot("histogram", [
+                {
+                    type: "histogram", 
+                    x: giveData(means, stds, data.length)
+                }, 
+                {
+                    x: x, 
+                    y: y, 
+                    type: "scatter"
+                }
+            ]); 
+            console.log(gmmMeans);
+            console.log(gmmStds);
         }
     }
 
@@ -220,7 +170,6 @@
 </svelte:head>
 
 <html lang="en" data-theme="cupcake">
-<input type="checkbox" id="my-modal" class="modal-toggle" />
 
 <body class="text-center"> 
     <h1 class="text-4xl my-4"> Gaussian Mixture Model Demo </h1>  
@@ -251,18 +200,18 @@
         </div>
     </div>
 
-    <button on:click={() => {started = true; }} class="btn btn-block mb-4 bg-blue-200 w-[60%] mt-4 text-black hover:text-white">Run Gaussian Mixture Model (<em> k </em> = {numClusters})! </button>
+    <button on:click={() => {started = true; }} class="btn btn-block mb-4  bg-blue-200 w-[60%] mt-4 text-black hover:text-white">Run Gaussian Mixture Model (<em> k </em> = {numClusters})! </button>
     <!-- on click run the GMMs, which constantly update this function's parameters-->
     
     <!-- if they have stopped, then you should show the CDF operation -->
-    <!-- {#if stop} -->
-    <div> 
-       <button on:click={() => {cdfModalOpen = true; }} class="btn btn-block mb-4 bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> CDF??</button>
-        <Modal showModal={cdfModalOpen}>
-            <CDF on:update={displayCDF} means={gmmMeans} stds={gmmStds} mw={gmmMixtureWeights} /> 
-        </Modal>
-    </div> 
-    <!-- {/if} -->
+    {#if stop}
+        <div> 
+        <button on:click={() => {cdfModalOpen = true; }} class="btn btn-block mb-4 bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> CDF??</button>
+            <Modal showModal={cdfModalOpen}>
+                <CDF on:update={displayCDF} means={gmmMeans} stds={gmmStds} mw={gmmMixtureWeights} /> 
+            </Modal>
+        </div> 
+    {/if}
 
     <div id="histogram"/> 
 </body>
