@@ -34,7 +34,7 @@
 </div> 
 
 {#if start != null && end != null}
-    <h3 class="mt-4 text-2xl"> P-Value: {pvalue} </h3>
+    <h3 class="mt-4 text-2xl"> P-Value: <strong> {pvalue} </strong> </h3>
 {/if}
 
 

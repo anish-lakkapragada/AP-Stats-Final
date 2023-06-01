@@ -25,8 +25,8 @@
 
     // GMM training params
     const iters = 10; // 100 max iterations
-    const N= 10000; // number of data points
-    const tries = 10; 
+    let N= 10000; // number of data points
+    let tries = 10; 
 
     $: numClusters, resize(); 
 
@@ -67,7 +67,7 @@
         data = giveData(means, stds, N); 
 
         await new Promise((resolve) => setTimeout(resolve, 500));
-
+        // @ts-ignore
         Plotly.newPlot('histogram', [{
             type: "histogram", 
             x: data,
@@ -196,11 +196,20 @@
         <div class="collapse-title text-xl font-medium"> Configure Clusters </div>
         <div class="collapse-content">
             <!-- clusters for each amount -->
-            <div class="flex flex-row justify-evenly gap-2 w-full"> 
-                {#each {length: numClusters} as _, i}
-                    <CustomizeCluster on:updateParams={handleUpdateParams} index={i} /> 
-                {/each}
-            </div> 
+            <div class="flex flex-col gap-3">
+                <div class="flex flex-row justify-evenly gap-2 w-full"> 
+                    {#each {length: numClusters} as _, i}
+                        <CustomizeCluster on:updateParams={handleUpdateParams} index={i} /> 
+                    {/each}
+                </div> 
+
+                <div class="flex flex-col gap-[1em] mt-4 mx-[10%]"> 
+                    <h2 class="text-xl"> Sample Size <em> N </em> Per Cluster: {N} </h2>
+                    <input type="range" min="1000" max="100000" bind:value={N} class="range range-info range-xs" />
+                    <h2 class="text-xl"> {tries > 1 ? "Attempts" : "Attempt"} to Regress Distribution: {tries} </h2>
+                    <input type="range" min="1" max="50" bind:value={tries} class="range range-info range-xs" />
+                </div> 
+            </div>
         </div>
     </div>
 
