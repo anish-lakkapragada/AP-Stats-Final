@@ -28,6 +28,15 @@
     let N= 10000; // number of data points
     let tries = 10; 
 
+    // random plotly shiz
+    const layout = { 
+        title: `univariate distribution of clusters`,
+        font: {size: 12}
+    };
+
+    const config = {responsive: true}
+
+
     $: numClusters, resize(); 
 
     function resize() {
@@ -48,7 +57,7 @@
         Plotly.newPlot('histogram', [{
             type: "histogram", 
             x: data,
-        }]);
+        }], layout, config);
     });
 
     async function handleUpdateParams(e : any) {
@@ -71,7 +80,7 @@
         Plotly.newPlot('histogram', [{
             type: "histogram", 
             x: data,
-        }]);   
+        }], layout, config);   
     }
 
     $: {
@@ -97,7 +106,7 @@
                     y: y, 
                     type: "scatter"
                 }
-            ]); 
+            ], layout, config); 
             console.log(gmmMeans);
             console.log(gmmStds);
 
@@ -176,8 +185,8 @@
 <html lang="en" data-theme="cupcake">
 
 <body class="text-center"> 
-    <h1 class="text-4xl my-4"> Gaussian Mixture Model Demo </h1>  
-    <p class="mb-4"> Anish Lakkapragada's AP Stats Final Project. </p>
+    <h1 class="text-4xl my-4"> gaussian mixture model demo </h1>  
+    <p class="mb-4"> anish lakkapragada's ap stats final project </p>
 
     <!-- show the histogram-->
 
@@ -186,14 +195,14 @@
     <!-- {/if} -->
 
     <!-- one bar for number of clusters  -->
-    <h2 class=" mt-[50px]"> Choose Number of Clusters </h2> 
+    <h2 class=" mt-[50px]"> choose number of clusters </h2> 
     <input bind:value={numClusters} type="number" class="input input-bordered w-full max-w-xs" onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))" />
     
     <!-- this is like well known.-->
     <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
     <div tabindex="0" class="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box mt-4 mx-[20%]">
         <input type="checkbox" />
-        <div class="collapse-title text-xl font-medium"> Configure Clusters </div>
+        <div class="collapse-title text-xl font-medium"> configure clusters </div>
         <div class="collapse-content">
             <!-- clusters for each amount -->
             <div class="flex flex-col gap-3">
@@ -204,22 +213,22 @@
                 </div> 
 
                 <div class="flex flex-col gap-[1em] mt-4 mx-[10%]"> 
-                    <h2 class="text-xl"> Sample Size <em> N </em> Per Cluster: {N} </h2>
+                    <h2 class="text-xl"> sample size <em> N </em> per cluster: {N} </h2>
                     <input type="range" min="1000" max="100000" bind:value={N} class="range range-info range-xs" />
-                    <h2 class="text-xl"> {tries > 1 ? "Attempts" : "Attempt"} to Regress Distribution: {tries} </h2>
+                    <h2 class="text-xl"> {tries > 1 ? "attempts" : "attempt"} to regress distribution: {tries} </h2>
                     <input type="range" min="1" max="50" bind:value={tries} class="range range-info range-xs" />
                 </div> 
             </div>
         </div>
     </div>
 
-    <button on:click={() => {started = true; }} class="btn btn-block mb-4  bg-blue-200 w-[60%] mt-4 text-black hover:text-white">Run Gaussian Mixture Model (<em> k </em> = {numClusters})! </button>
+    <button on:click={() => {started = true; }} class="btn btn-block mb-4 lowercase  bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> run gaussian mixture model (<em> k </em> = {numClusters})! </button>
     <!-- on click run the GMMs, which constantly update this function's parameters-->
     
     <!-- if they have stopped, then you should show the CDF operation -->
     {#if stop}
         <div> 
-        <button on:click={() => {cdfModalOpen = true; }} class="btn btn-block mb-4 bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> CDF??</button>
+        <button on:click={() => {cdfModalOpen = true; }} class="btn btn-block mb-4 lowercase bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> cumulative distribution function </button>
             <Modal showModal={cdfModalOpen}>
                 <CDF on:update={displayCDF} means={gmmMeans} stds={gmmStds} mw={gmmMixtureWeights} /> 
             </Modal>

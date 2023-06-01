@@ -27,13 +27,13 @@
 
 
 <div> 
-    <h3 class="text-xl"> Cluster {index + 1} Params </h3> 
+    <h3 class="text-xl"> cluster {index + 1} params </h3> 
     <div class="gap-2"> 
-        <h4 class="text-sm mt-4"> Cluster Mu </h4>
+        <h4 class="text-sm mt-4"> cluster µ </h4>
         <!-- @ts -->
         <input type="number" bind:value={mu} class="input input-bordered w-full max-w-xs"  />
 
-        <h4 class="text-sm"> Cluster Std </h4>
+        <h4 class="text-sm"> cluster σ </h4>
         <input type="number" bind:value={std} class="input input-bordered w-full max-w-xs" />
     </div> 
 </div>
