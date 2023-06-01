@@ -115,7 +115,7 @@ function xlfNormalPDF1b (x: number, mu: number, sigma: number): number {
 }
 
 // expectation step 
-export function expectation(means: number[], stds: number[], mixture_weights: number[], data: number[], k : number) : number[][] {
+export function expectation(means: number[], stds: number[], mixture_weights: number[], data: number[], k : number) : number[][] | null{
   const N = data.length; 
   const clusterProbabilities : number[][] = [];
 
@@ -127,7 +127,8 @@ export function expectation(means: number[], stds: number[], mixture_weights: nu
       const normalDist : NormalDistribution = new NormalDistribution(mean, sigma);
       row.push(mixture_weights[k_index] * normalDist.pdf(data[i]));
       if (Number.isNaN(mixture_weights[k_index] * xlfNormalPDF1b(data[i], mean, sigma))) {
-        console.log("bruh nanner");
+        // if this is a nan, give up 
+        return null;
       }
     }
     clusterProbabilities.push(row);
@@ -139,15 +140,11 @@ export function expectation(means: number[], stds: number[], mixture_weights: nu
 // maximization step 
 export function maximization(means: number[], stds: number[], mixture_weights: number[], data: number[], k: number, clusterProbabilities: number[][]) : {means: number[], stds: number[], mixture_weights: number[]} {
   const N = data.length; 
-  console.log(means)
   for (let k_index = 0; k_index < k; k_index++) {
 
     const sum_cluster_probs: number = sumCol(clusterProbabilities, k_index);
     const column = getCol(clusterProbabilities, k_index); // probabilities of X belong to Cluster k_index
 
-
-    console.log("column"); 
-    console.log(column);
     
     if (Number.isNaN(sum_cluster_probs)) {
       console.log("we have a NaN");
@@ -193,7 +190,7 @@ function getFreqAtOneLocation(x: number, means: number[], stds: number[], mixtur
 }
 
 const argFact = (compareFn: { (min: any, el: any): any; (max: any, el: any): any; }) => (array: any[]) => array.map((el: any, idx: any) => [el, idx]).reduce(compareFn)[1]
-const argMax = argFact((min: number[], el: number[]) => (el[0] > min[0] ? el : min))
+export const argMax = argFact((min: number[], el: number[]) => (el[0] > min[0] ? el : min))
 const argMin = argFact((max: number[], el: number[]) => (el[0] < max[0] ? el : max))
 
 export function getBounds(means: number[], stds: number[]) {

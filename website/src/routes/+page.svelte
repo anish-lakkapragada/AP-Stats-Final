@@ -24,7 +24,7 @@
     let gmmMixtureWeights: number[] = []; 
 
     // GMM training params
-    const iters = 1000; // 100 max iterations
+    const iters = 10; // 100 max iterations
     const N= 10000; // number of data points
     const tries = 10; 
 
@@ -52,6 +52,8 @@
     });
 
     async function handleUpdateParams(e : any) {
+        stop = false; 
+
         const {index, mu, std} = e.detail;
         means[index] = mu; 
         stds[index] = std; 
@@ -75,14 +77,14 @@
     $: {
         if (started) {
            
-            stop = false; 
+            stop = false; // restarting the machine, no CDF option
             
             // regression time
-            const bestParams = multipleGMMRuns(tries, iters, data, numClusters, 1e-16);
+            const bestParams = multipleGMMRuns(10, iters, data, numClusters, 1e-6);
+            console.log(`LL: ${bestParams.newLL}`);
             gmmMeans = bestParams.gmmMeans; gmmStds = bestParams.gmmStds; gmmMixtureWeights = bestParams.gmmMixtureWeights;
             
             stop = true; 
-            console.log("integral of GMM PDF", integral(-200, 200, gmmMeans, gmmStds, gmmMixtureWeights, 0.0001, 1)); 
             const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.1, Math.min(...data), Math.max(...data), data.length); 
             
             Plotly.newPlot("histogram", [
@@ -98,6 +100,8 @@
             ]); 
             console.log(gmmMeans);
             console.log(gmmStds);
+
+            started = false; // so that we can replay everything 
         }
     }
     // bruh
@@ -116,7 +120,6 @@
 
 
         for (let i =0; i < x.length; i++) {
-            console.log(x[i]);
             if (x[i] >= start && x[i] <= end) {
                 includedX.push(x[i]);
                 includedY.push(y[i]);

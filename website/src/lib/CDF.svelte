@@ -36,3 +36,12 @@
 {#if start != null && end != null}
     <h3 class="mt-4 text-2xl"> P-Value: {pvalue} </h3>
 {/if}
+
+
+<style> 
+
+div {
+    align-items: center;
+}
+
+</style> 
