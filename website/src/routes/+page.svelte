@@ -60,14 +60,17 @@
         }], layout, config);
     });
 
-    async function handleUpdateParams(e : any) {
+
+    async function handleUpdateParams(e: any) {
         stop = false; 
 
-        const {index, mu, std} = e.detail;
-        means[index] = mu; 
-        stds[index] = std; 
-        console.log(means);
-        console.log(stds);
+        if (e?.detail) {
+            const {index, mu, std} = e.detail;
+            means[index] = mu; 
+            stds[index] = std; 
+            console.log(means);
+            console.log(stds);
+        }
 
         showHistogram = true; 
 
@@ -75,8 +78,9 @@
         // update the plotly histogram based on this 
         data = giveData(means, stds, N); 
 
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         // @ts-ignore
+
         Plotly.newPlot('histogram', [{
             type: "histogram", 
             x: data,
@@ -185,8 +189,8 @@
 <html lang="en" data-theme="cupcake">
 
 <body class="text-center"> 
-    <h1 class="text-4xl my-4"> gaussian mixture model demo </h1>  
-    <p class="mb-4"> anish lakkapragada's ap stats final project </p>
+    <h1 class="md:text-4xl my-2 sm:text-xl"> gaussian mixture model demo </h1>  
+    <p class="mb-4 text-md"> anish lakkapragada's ap stats final project </p>
 
     <!-- show the histogram-->
 
@@ -214,7 +218,7 @@
 
                 <div class="flex flex-col gap-[1em] mt-4 mx-[10%]"> 
                     <h2 class="text-xl"> sample size <em> N </em> per cluster: {N} </h2>
-                    <input type="range" min="1000" max="100000" bind:value={N} class="range range-info range-xs" />
+                    <input type="range" min="1000" max="100000" bind:value={N} on:blur={handleUpdateParams(null)} class="range range-info range-xs" />
                     <h2 class="text-xl"> {tries > 1 ? "attempts" : "attempt"} to regress distribution: {tries} </h2>
                     <input type="range" min="1" max="50" bind:value={tries} class="range range-info range-xs" />
                 </div> 
@@ -222,14 +226,14 @@
         </div>
     </div>
 
-    <button on:click={() => {started = true; }} class="btn btn-block mb-4 lowercase  bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> run gaussian mixture model (<em> k </em> = {numClusters})! </button>
+    <button on:click={() => {started = true; }} class="btn btn-block mb-4 lowercase  bg-blue-200 w-[60%] mt-4 text-black hover:text-white md:text-md"> run gaussian mixture model </button>
     <!-- on click run the GMMs, which constantly update this function's parameters-->
     
     <!-- if they have stopped, then you should show the CDF operation -->
     {#if stop}
         <div> 
-        <button on:click={() => {cdfModalOpen = true; }} class="btn btn-block mb-4 lowercase bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> cumulative distribution function </button>
-            <Modal showModal={cdfModalOpen}>
+        <button on:click={() => {console.log(cdfModalOpen); cdfModalOpen = true; }} class="btn btn-block mb-4 lowercase bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> cumulative distribution function </button>
+            <Modal on:close={() => {console.log("CLOSE"); cdfModalOpen = false;}} showModal={cdfModalOpen}>
                 <CDF on:update={displayCDF} means={gmmMeans} stds={gmmStds} mw={gmmMixtureWeights} /> 
             </Modal>
         </div> 

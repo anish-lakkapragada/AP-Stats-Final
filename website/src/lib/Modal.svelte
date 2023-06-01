@@ -1,10 +1,12 @@
 <script lang="ts">
     // @ts-nocheck
     import '../app.css';
+	import { createEventDispatcher } from 'svelte';
 
 	export let showModal: boolean; // boolean
 
 	let dialog; // HTMLDialogElement
+	const dispatch = createEventDispatcher(); // dispatcher
 
 	$: if (dialog && showModal) dialog.showModal();
 </script>
@@ -13,20 +15,24 @@
 <dialog
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
-	on:click|self={() => dialog.close()}
+	on:click|self={() => {dispatch("close", {}); dialog.close()}}
     class="!items-center"
 >
 	<div on:click|stopPropagation>
 		<slot name="header" />
 		<slot />
 		<!-- svelte-ignore a11y-autofocus -->
-		<button autofocus on:click={() => dialog.close()}></button>
 	</div>
 </dialog>
 
 <style>
+	@media(min-width: 500px) {
+		dialog {
+			max-width: 100em;
+		}
+	}
+
 	dialog {
-		max-width: 100em;
 		border-radius: 0.2em;
 		border: none;
 		padding: 0;
