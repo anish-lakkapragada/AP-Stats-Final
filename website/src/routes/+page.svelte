@@ -189,8 +189,8 @@
 <html lang="en" data-theme="cupcake">
 
 <body class="text-center"> 
-    <h1 class="md:text-4xl my-2 sm:text-xl"> gaussian mixture model demo </h1>  
-    <p class="mb-4 text-md"> anish lakkapragada's ap stats final project </p>
+    <h1 id="title" class="md:text-4xl my-2"> gaussian mixture model demo </h1>  
+    <p id="credit" class="mb-4 md:text-md sm:text-sm"> anish lakkapragada's ap stats final project </p>
 
     <!-- show the histogram-->
 
@@ -244,5 +244,16 @@
 </html>
 
 <style> 
+
+@media(max-width: 500px) {
+    #title {
+        font-size: 1.5em;
+
+    }
+
+    #credit {
+        font-size: 0.75em;
+    }
+}
 
 </style> 

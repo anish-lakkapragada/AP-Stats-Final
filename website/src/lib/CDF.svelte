@@ -25,11 +25,11 @@
 
 
 <h1 class="text-4xl mb-4"> Gaussian Mixture Model CDF </h1>
-<div class="w-full flex gap-2 m-0 p-0 items-center flex-row"> 
+<div class="w-full flex gap-2 m-0 p-0 items-center flex-row overflow-hidden"> 
     <h1 class="text-2xl"> gmmcdf( </h1> 
-    <input type="number" placeholder="Start Value" bind:value={start} class="input input-bordered w-[8em]"  />
+    <input type="number" placeholder={window.innerWidth > 500 ? "Start Value": "Start Val"} bind:value={start} class="input w-[8em] input-bordered"  />
     <h1 class="text-2xl"> , </h1> 
-    <input type="number" placeholder="End Value" bind:value={end} class="input input-bordered w-[8em]"  />
+    <input type="number" placeholder={window.innerWidth > 500 ? "End Value": "End Val"} bind:value={end} class="input w-[8em] input-bordered"  />
     <h1 class="text-2xl"> ) </h1> 
 </div> 
 
@@ -39,6 +39,13 @@
 
 
 <style> 
+
+@media(max-width: 500px) {
+    input {
+        width: 6em;
+    }
+}
+
 
 div {
     align-items: center;
