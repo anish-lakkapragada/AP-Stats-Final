@@ -34,6 +34,11 @@
         font: {size: 12}
     };
 
+    const px_layout = { 
+                title: `P(X) function`,
+                font: {size: 12}
+    }; 
+
     const config = {responsive: true}
 
 
@@ -98,19 +103,22 @@
             gmmMeans = bestParams.gmmMeans; gmmStds = bestParams.gmmStds; gmmMixtureWeights = bestParams.gmmMixtureWeights;
             
             stop = true; 
-            const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.1, Math.min(...data), Math.max(...data), data.length); 
+            const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.1, Math.min(...data), Math.max(...data),1); 
             
             Plotly.newPlot("histogram", [
-                {
-                    type: "histogram", 
-                    x: giveData(means, stds, data.length)
-                }, 
+                // {
+                //     type: "histogram", 
+                //     x: giveData(means, stds, data.length)
+                // }, 
                 {
                     x: x, 
                     y: y, 
-                    type: "scatter"
+                    type: "scatter", 
+                    line: {
+                        color: "orange"
+                    }
                 }
-            ], layout, config); 
+            ], px_layout, config); 
             console.log(gmmMeans);
             console.log(gmmStds);
 
@@ -123,7 +131,7 @@
         const {start, end} = e.detail; 
         // from x E {start, end} show a shaded area
         const {start: trueStart, end: trueEnd} = getBounds(gmmMeans, gmmStds);
-        const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.001, trueStart, trueEnd, data.length);
+        const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.001, trueStart, trueEnd, 1);
         const lowerX: number[] = [];
         const lowerY: number[] = []; 
         const includedX: number[] = []; 
@@ -175,7 +183,7 @@
                     color: "orange"
                 }
             }
-        ]);
+        ], px_layout, config);
 
     }
 
