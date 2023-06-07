@@ -73,13 +73,10 @@
             const {index, mu, std} = e.detail;
             means[index] = mu; 
             stds[index] = std; 
-            console.log(means);
-            console.log(stds);
         }
 
         showHistogram = true; 
 
-        console.log("generating new data")
         // update the plotly histogram based on this 
         data = giveData(means, stds, N); 
 
@@ -99,7 +96,6 @@
             
             // regression time
             const bestParams = multipleGMMRuns(10, iters, data, numClusters, 1e-6);
-            console.log(`LL: ${bestParams.newLL}`);
             gmmMeans = bestParams.gmmMeans; gmmStds = bestParams.gmmStds; gmmMixtureWeights = bestParams.gmmMixtureWeights;
             
             stop = true; 
@@ -119,8 +115,6 @@
                     }
                 }
             ], px_layout, config); 
-            console.log(gmmMeans);
-            console.log(gmmStds);
 
             started = false; // so that we can replay everything 
         }
@@ -129,7 +123,6 @@
 
     function displayCDF(e: any) {
         const {start, end} = e.detail; 
-        // from x E {start, end} show a shaded area
         const {start: trueStart, end: trueEnd} = getBounds(gmmMeans, gmmStds);
         const {x, y} = getGMMPDF(gmmMeans, gmmStds, gmmMixtureWeights, 0.001, trueStart, trueEnd, 1);
         const lowerX: number[] = [];
@@ -240,8 +233,8 @@
     <!-- if they have stopped, then you should show the CDF operation -->
     {#if stop}
         <div> 
-        <button on:click={() => {console.log(cdfModalOpen); cdfModalOpen = true; }} class="btn btn-block mb-4 lowercase bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> cumulative distribution function </button>
-            <Modal on:close={() => {console.log("CLOSE"); cdfModalOpen = false;}} showModal={cdfModalOpen}>
+        <button on:click={() => {cdfModalOpen = true; }} class="btn btn-block mb-4 lowercase bg-blue-200 w-[60%] mt-4 text-black hover:text-white"> cumulative distribution function </button>
+            <Modal on:close={() => {cdfModalOpen = false;}} showModal={cdfModalOpen}>
                 <CDF on:update={displayCDF} means={gmmMeans} stds={gmmStds} mw={gmmMixtureWeights} /> 
             </Modal>
         </div> 

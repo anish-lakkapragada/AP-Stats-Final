@@ -37,9 +37,6 @@ function oneStep(gmmMeans: number[], gmmStds: number[], gmmMixtureWeights: numbe
     const newLL = ll(clusterProbabilities);
 
     if (newLL - oldLL < tolerance) {
-        console.log(`change in LL: ${Math.abs(newLL - oldLL)}`);
-        console.log(`this is tolerance: ${tolerance}, and this is negative: ${Math.abs(newLL - oldLL) - tolerance < 0}`);
-
         return {
             error: false, 
             stop: true, 
@@ -62,11 +59,10 @@ function oneStep(gmmMeans: number[], gmmStds: number[], gmmMixtureWeights: numbe
 
 function oneGMMRun(iters: number, means: number[], std: number[], mixtureWeights: number[], data: number[], numClusters: number, tolerance: number){
     let oldLL : number = -Infinity;
-    console.log("------------------")
+
     for (let i =0; i < iters; i++) {
         const {error, stop, gmmMeans, gmmStds, gmmMixtureWeights, newLL} = oneStep(means, std, mixtureWeights, data, numClusters, oldLL, tolerance);  
         if (error) {
-            console.log(`model stopping @ ${iters}`)
             return {
                 error: true, 
                 gmmMeans: means,
@@ -125,7 +121,7 @@ export function multipleGMMRuns(max_tries: number, max_iters: number, data: numb
     for (let i = 0; i < max_tries; i++) {
         const {means, stds, mixtureWeights} = initialization(data, numClusters);
         if (JSON.stringify(originalData) !== JSON.stringify(data)) {
-            console.log("WE FUCKED");
+            console.log("screwed");
         }
 
         // @ts-ignore
